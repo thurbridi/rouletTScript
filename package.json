@@ -1,0 +1,26 @@
+{
+  "name": "roulette_game",
+  "version": "0.0.1",
+  "description": "",
+  "main": "out/roulette_game/index.js",
+  "types": "src/roulette_game/index.ts",
+  "scripts": {
+    "lint": "tslint -p .",
+    "build": "npm run lint && tsc",
+    "test": "npm run build && mocha -u tdd out/test/**"
+  },
+  "author": "Arthur Bridi Guazzelli",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/mocha": "^2.2.44",
+    "@types/node": "^9.4.6",
+    "mocha": "^5.0.4",
+    "tslint": "^5.8.0",
+    "typescript": "^2.6.1",
+    "codelyzer": "^4.2.1"
+  },
+  "dependencies": {
+    "es6-modules-commonjs": "^0.1.3",
+    "tslib": "^1.7.1"
+  }
+}

@@ -1,0 +1,39 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint:recommended"
+    ],
+    "jsRules": {},
+    "rules": {
+        "array-type": [false],
+        "ban-types": [false],
+        "interface-name": [true, "never-prefix"],
+        "max-classes-per-file": [false],
+        "no-console": [false],
+        "no-var-requires": [false],
+        "quotemark": [false],
+        "space-before-function-paren": [true, {
+            "anonymous": "always",
+            "named": "never",
+            "asyncArrow": "always",
+            "method": "never",
+            "constructor": "never"
+        }],
+        "typedef": [
+            true,
+            "call-signature",
+            "parameter",
+            "property-declaration"
+        ],
+        "whitespace": [true,
+            "check-branch",
+            "check-decl",
+            "check-module",
+            "check-separator",
+            "check-type",
+            "check-typecast",
+            "check-preblock"
+        ]
+    },
+    "rulesDirectory": []
+}

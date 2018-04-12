@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "outDir": "out",
+        "importHelpers": true,
+        "module": "commonjs",
+        "target": "ES6",
+        "lib": [ "es6", "esnext", "esnext.asynciterable", "dom" ],
+        "plugins": [{
+            "name": "tslint-language-service"
+        }]
+    },
+    "include": [
+        "src/**/*.ts"
+    ]
+}
