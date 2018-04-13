@@ -4,7 +4,7 @@ abstract class Roulette {
     public groupToNumbers: Dictionary<number[]> = {};
     public abstract betMultiplier: Dictionary<number>;
 
-    protected abstract sequence: number[];
+    public abstract sequence: number[];
 
     constructor() {
         this.groupToNumbers[BetGroups.RED] = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];

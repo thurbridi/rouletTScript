@@ -14,6 +14,7 @@ export class Player {
         this.name = name;
         this.budget = budget;
         this.currentBets = [];
+        this.skipCount = 0;
         this.currentBetAmount = 0;
     }
 
@@ -21,16 +22,12 @@ export class Player {
         this.currentBets.push(new BetOnValue(choosenNumber, amount));
         this.currentBetAmount += amount;
         this.budget -= amount;
-
-        console.log("Player " + this.name + " bets on: " + choosenNumber + " ||| Value: $" + amount);
     }
 
     public placeBetOnGroup(choosenGroup: BetGroups, amount: number): void {
         this.currentBets.push(new BetOnGroup(choosenGroup, amount));
         this.currentBetAmount += amount;
         this.budget -= amount;
-
-        console.log("Player " + this.name + " bets on: " + choosenGroup + " ||| Value: $" + amount);
     }
 
     public skipBet(): void {

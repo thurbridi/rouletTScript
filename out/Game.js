@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const AmericanRoulette_1 = require("./AmericanRoulette");
 const BetOnGroup_1 = require("./BetOnGroup");
 const BetOnValue_1 = require("./BetOnValue");
 const EuropeanRoulette_1 = require("./EuropeanRoulette");
-const Player_1 = require("./Player");
-const Utils_1 = require("./Utils");
+const FrenchRoulette_1 = require("./FrenchRoulette");
 class Game {
     constructor(roulette, bankBudget, players) {
         this.players = players;
@@ -12,7 +12,6 @@ class Game {
         this.bankBudget = bankBudget;
     }
     start() {
-        // let i: number = 0;
         while (true) {
             console.log("--- ROUND BEGIN ---");
             this.processRound();
@@ -28,22 +27,29 @@ class Game {
             }
             console.log("--- ROUND END ---");
             console.log();
-            // i++;
         }
     }
-    pay(player, amount) {
-        this.bankBudget -= amount;
-        player.budget += amount;
-        console.log("Player " + player.name + " made $" + amount);
+    bankHasMoney() {
+        return this.bankBudget >= 0;
     }
-    kickPlayer(player) {
-        this.players.splice(this.players.indexOf(player), 1);
+    spinRoulette() {
+        return this.roulette.spin();
+    }
+    playerCount() {
+        return this.players.length;
+    }
+    rouletteType() {
+        if (this.roulette instanceof AmericanRoulette_1.AmericanRoulette) {
+            return "American roulette";
+        }
+        else if (this.roulette instanceof EuropeanRoulette_1.EuropeanRoulette) {
+            return "European roulette";
+        }
+        else if (this.roulette instanceof FrenchRoulette_1.FrenchRoulette) {
+            return "French roulette";
+        }
     }
     processRound() {
-        for (const player of this.players) {
-            player.placeBetOnValue(Math.floor(Math.random() * 37), Math.ceil(player.budget - Math.random() * player.budget));
-            player.placeBetOnGroup(Utils_1.BetGroups.HIGH, Math.ceil(player.budget - Math.random() * player.budget));
-        }
         const result = this.roulette.spin();
         console.log("\n>>> The ball landed on the number " + result + " <<<\n");
         for (const player of this.players) {
@@ -84,6 +90,13 @@ class Game {
         }
         player.resetBets();
     }
+    kickPlayer(player) {
+        this.players.splice(this.players.indexOf(player), 1);
+    }
+    pay(player, amount) {
+        this.bankBudget -= amount;
+        player.budget += amount;
+        console.log("Player " + player.name + " made $" + amount);
+    }
 }
-const game = new Game(new EuropeanRoulette_1.EuropeanRoulette(), 1000, [new Player_1.Player('a', 100), new Player_1.Player('b', 100), new Player_1.Player('c', 100)]);
-game.start();
+exports.Game = Game;

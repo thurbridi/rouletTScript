@@ -7,19 +7,18 @@ class Player {
         this.name = name;
         this.budget = budget;
         this.currentBets = [];
+        this.skipCount = 0;
         this.currentBetAmount = 0;
     }
     placeBetOnValue(choosenNumber, amount) {
         this.currentBets.push(new BetOnValue_1.BetOnValue(choosenNumber, amount));
         this.currentBetAmount += amount;
         this.budget -= amount;
-        console.log("Player " + this.name + " bets on: " + choosenNumber + " ||| Value: $" + amount);
     }
     placeBetOnGroup(choosenGroup, amount) {
         this.currentBets.push(new BetOnGroup_1.BetOnGroup(choosenGroup, amount));
         this.currentBetAmount += amount;
         this.budget -= amount;
-        console.log("Player " + this.name + " bets on: " + choosenGroup + " ||| Value: $" + amount);
     }
     skipBet() {
         this.skipCount++;

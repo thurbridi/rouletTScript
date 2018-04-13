@@ -3,7 +3,7 @@ import { BetGroups, Dictionary } from './Utils';
 
 class FrenchRoulette extends Roulette {
     public betMultiplier: Dictionary<number>;
-    protected sequence: number[];
+    public sequence: number[];
 
     constructor() {
         super();

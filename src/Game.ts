@@ -1,4 +1,5 @@
 import { PassThrough } from 'stream';
+import { AmericanRoulette } from './AmericanRoulette';
 import { Bet } from './Bet';
 import { BetOnGroup } from './BetOnGroup';
 import { BetOnValue } from './BetOnValue';
@@ -9,9 +10,9 @@ import { Roulette } from './Roulette';
 import { BetGroups } from './Utils';
 
 class Game {
-    private bankBudget: number;
-    private players: Player[];
-    private roulette: Roulette;
+    public bankBudget: number;
+    public players: Player[];
+    public roulette: Roulette;
 
     public constructor(roulette: Roulette, bankBudget: number, players: Player[]) {
         this.players = players;
@@ -20,7 +21,6 @@ class Game {
     }
 
     public start(): void {
-        // let i: number = 0;
         while (true) {
             console.log("--- ROUND BEGIN ---");
             this.processRound();
@@ -37,26 +37,32 @@ class Game {
 
             console.log("--- ROUND END ---");
             console.log();
-            // i++;
         }
     }
 
-    private pay(player: Player, amount: number): void {
-        this.bankBudget -= amount;
-        player.budget += amount;
-        console.log("Player " + player.name + " made $" + amount);
+    public bankHasMoney(): boolean {
+        return this.bankBudget >= 0;
     }
 
-    private kickPlayer(player: Player): void {
-        this.players.splice(this.players.indexOf(player), 1);
+    public spinRoulette(): number {
+        return this.roulette.spin();
     }
 
-    private processRound(): void {
-        for (const player of this.players) {
-            player.placeBetOnValue(Math.floor(Math.random() * 37),
-                                   Math.ceil(player.budget - Math.random() * player.budget));
-            player.placeBetOnGroup(BetGroups.HIGH, Math.ceil(player.budget - Math.random() * player.budget));
+    public playerCount(): number {
+        return this.players.length;
+    }
+
+    public rouletteType(): string {
+        if (this.roulette instanceof AmericanRoulette) {
+            return "American roulette";
+        } else if (this.roulette instanceof EuropeanRoulette) {
+            return "European roulette";
+        } else if (this.roulette instanceof FrenchRoulette) {
+            return "French roulette";
         }
+    }
+
+    public processRound(): void {
         const result = this.roulette.spin();
         console.log("\n>>> The ball landed on the number " + result + " <<<\n");
 
@@ -70,7 +76,7 @@ class Game {
         }
     }
 
-    private processBets(player: Player, rouletteNumber: number): void {
+    public processBets(player: Player, rouletteNumber: number): void {
         for (const bet of player.currentBets) {
             let payout;
 
@@ -97,8 +103,16 @@ class Game {
         }
         player.resetBets();
     }
+
+    public kickPlayer(player: Player): void {
+        this.players.splice(this.players.indexOf(player), 1);
+    }
+
+    private pay(player: Player, amount: number): void {
+        this.bankBudget -= amount;
+        player.budget += amount;
+        console.log("Player " + player.name + " made $" + amount);
+    }
 }
 
-const game = new Game(new EuropeanRoulette(), 1000,
-    [new Player('a', 100), new Player('b', 100), new Player('c', 100)]);
-game.start();
+export { Game };
