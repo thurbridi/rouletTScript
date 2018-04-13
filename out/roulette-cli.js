@@ -76,67 +76,93 @@ function inputChoosenNumber() {
     }
     return choosenNumber;
 }
-function inputBetAmount() {
-    return rl.questionInt("How much will you bet? ");
+function inputBetAmount(player) {
+    console.log("How much will you bet? ");
+    const MAX = player.budget;
+    const MIN = 1;
+    let amount = Math.ceil(player.budget / 2);
+    let key;
+    console.log('\n\n' + (new Array(20)).join(' ') + '[Z] <- -> [X]  FIX: [SPACE]\n');
+    while (true) {
+        console.log('\x1B[1A\x1B[K|' +
+            (new Array(amount + 1)).join('-') + 'O' +
+            (new Array(MAX - amount + 1)).join('-') + '| ' + amount);
+        key = rl.keyIn('', { hideEchoBack: true, mask: '', limit: 'zx ' });
+        if (key === 'z') {
+            if (amount > MIN) {
+                amount--;
+            }
+        }
+        else if (key === 'x') {
+            if (amount < MAX) {
+                amount++;
+            }
+        }
+        else {
+            break;
+        }
+    }
+    return amount;
 }
 function inputBet(player) {
     const betTypes = ["Straight-up", "Reds", "Blacks", "Evens", "Odds", "Lows", "Highs",
         "First Dozen", "Second Dozen", "Third Dozen", "Top Column", "Middle Column", "Bottom Column"];
     const index = rl.keyInSelect(betTypes, "What bet would you like to make?", { cancel: false });
-    const amount = inputBetAmount();
+    console.log("You choose", betTypes[index], ".\n");
+    const amount = inputBetAmount(player);
     switch (index) {
         case 0:
             const choosenNumber = inputChoosenNumber();
             player.placeBetOnValue(choosenNumber, amount);
-            console.log(player.name, "bets $" + amount, "on the number ", choosenNumber);
+            console.log(player.name, "bets $" + amount, "on the number ", choosenNumber, '\n');
             break;
         case 1:
             player.placeBetOnGroup(Utils_1.BetGroups.RED, amount);
-            console.log(player.name, "bets $" + amount, "on Reds");
+            console.log(player.name, "bets $" + amount, "on Reds\n");
             break;
         case 2:
             player.placeBetOnGroup(Utils_1.BetGroups.BLACK, amount);
-            console.log(player.name, "bets $" + amount, "on Blacks");
+            console.log(player.name, "bets $" + amount, "on Blacks\n");
             break;
         case 3:
             player.placeBetOnGroup(Utils_1.BetGroups.EVEN, amount);
-            console.log(player.name, "bets $" + amount, "on Evens");
+            console.log(player.name, "bets $" + amount, "on Evens\n");
             break;
         case 4:
             player.placeBetOnGroup(Utils_1.BetGroups.ODD, amount);
-            console.log(player.name, "bets $" + amount, "on Odds");
+            console.log(player.name, "bets $" + amount, "on Odds\n");
             break;
         case 5:
             player.placeBetOnGroup(Utils_1.BetGroups.LOW, amount);
-            console.log(player.name, "bets $" + amount, "on Lows");
+            console.log(player.name, "bets $" + amount, "on Lows\n");
             break;
         case 6:
             player.placeBetOnGroup(Utils_1.BetGroups.HIGH, amount);
-            console.log(player.name, "bets $" + amount, "on Highs");
+            console.log(player.name, "bets $" + amount, "on Highs\n");
             break;
         case 7:
             player.placeBetOnGroup(Utils_1.BetGroups.DOZEN1, amount);
-            console.log(player.name, "bets $" + amount, "on the First Dozen");
+            console.log(player.name, "bets $" + amount, "on the First Dozen\n");
             break;
         case 8:
             player.placeBetOnGroup(Utils_1.BetGroups.DOZEN2, amount);
-            console.log(player.name, "bets $" + amount, "on the Second Dozen");
+            console.log(player.name, "bets $" + amount, "on the Second Dozen\n");
             break;
         case 9:
             player.placeBetOnGroup(Utils_1.BetGroups.DOZEN3, amount);
-            console.log(player.name, "bets $" + amount, "on the Third Dozen");
+            console.log(player.name, "bets $" + amount, "on the Third Dozen\n");
             break;
         case 10:
             player.placeBetOnGroup(Utils_1.BetGroups.COLUMNTOP, amount);
-            console.log(player.name, "bets $" + amount, "on the Top Column");
+            console.log(player.name, "bets $" + amount, "on the Top Column\n");
             break;
         case 11:
             player.placeBetOnGroup(Utils_1.BetGroups.COLUMNMID, amount);
-            console.log(player.name, "bets $" + amount, "on the Middle Column");
+            console.log(player.name, "bets $" + amount, "on the Middle Column\n");
             break;
         case 12:
             player.placeBetOnGroup(Utils_1.BetGroups.COLUMNBOT, amount);
-            console.log(player.name, "bets $" + amount, "on the Bottom Column");
+            console.log(player.name, "bets $" + amount, "on the Bottom Column\n");
             break;
     }
 }
@@ -167,7 +193,11 @@ function gameLoop() {
             }
             else {
                 if (inputWillBet(player)) {
-                    inputBet(player);
+                    let answer = true;
+                    while (answer) {
+                        inputBet(player);
+                        answer = rl.keyInYN("Would you like to make another bet?");
+                    }
                 }
             }
         }
