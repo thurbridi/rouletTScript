@@ -1,4 +1,3 @@
-import { PassThrough } from 'stream';
 import { AmericanRoulette } from './AmericanRoulette';
 import { Bet } from './Bet';
 import { BetOnGroup } from './BetOnGroup';
@@ -18,26 +17,6 @@ class Game {
         this.players = players;
         this.roulette = roulette;
         this.bankBudget = bankBudget;
-    }
-
-    public start(): void {
-        while (true) {
-            console.log("--- ROUND BEGIN ---");
-            this.processRound();
-            if (this.bankBudget < 0) {
-                console.log();
-                console.log("Roulette machine broke.");
-                console.log("-Understandable, have a nice day.");
-                break;
-            }
-            if (this.players.length === 0) {
-                console.log("House always wins");
-                break;
-            }
-
-            console.log("--- ROUND END ---");
-            console.log();
-        }
     }
 
     public bankHasMoney(): boolean {
@@ -64,25 +43,25 @@ class Game {
 
     public processRound(): void {
         const result = this.roulette.spin();
-        console.log("\n>>> The ball landed on the number " + result + " <<<\n");
 
         for (const player of this.players) {
             this.processBets(player, result);
 
-            console.log("Player " + player.name + " has $" + player.budget);
             if (player.budget <= 0) {
                 this.kickPlayer(player);
             }
         }
     }
 
-    public processBets(player: Player, rouletteNumber: number): void {
+    public processBets(player: Player, rouletteNumber: number): number {
+        let earnedAmount = 0;
         for (const bet of player.currentBets) {
             let payout;
 
             if (bet instanceof BetOnValue) {
                 if (bet.choosenNumber === rouletteNumber) {
                     payout = this.roulette.betMultiplier.straight * bet.amount + bet.amount;
+                    earnedAmount += payout;
                     this.pay(player, payout);
                 } else {
                     this.bankBudget += bet.amount;
@@ -91,6 +70,7 @@ class Game {
                 for (const n of this.roulette.groupToNumbers[bet.choosenGroup]) {
                     if (n === rouletteNumber) {
                         payout = this.roulette.betMultiplier[bet.choosenGroup] * bet.amount + bet.amount;
+                        earnedAmount += payout;
                         this.pay(player, payout);
                         break;
                     } else {
@@ -102,6 +82,11 @@ class Game {
             }
         }
         player.resetBets();
+        return earnedAmount;
+    }
+
+    public addPlayer(name: string, budget: number): void {
+        this.players.push(new Player(name, budget));
     }
 
     public kickPlayer(player: Player): void {
@@ -111,7 +96,6 @@ class Game {
     private pay(player: Player, amount: number): void {
         this.bankBudget -= amount;
         player.budget += amount;
-        console.log("Player " + player.name + " made $" + amount);
     }
 }
 

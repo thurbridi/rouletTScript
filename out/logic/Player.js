@@ -14,11 +14,13 @@ class Player {
         this.currentBets.push(new BetOnValue_1.BetOnValue(choosenNumber, amount));
         this.currentBetAmount += amount;
         this.budget -= amount;
+        this.skipCount = 0;
     }
     placeBetOnGroup(choosenGroup, amount) {
         this.currentBets.push(new BetOnGroup_1.BetOnGroup(choosenGroup, amount));
         this.currentBetAmount += amount;
         this.budget -= amount;
+        this.skipCount = 0;
     }
     skipBet() {
         this.skipCount++;

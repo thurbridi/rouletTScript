@@ -22,12 +22,14 @@ export class Player {
         this.currentBets.push(new BetOnValue(choosenNumber, amount));
         this.currentBetAmount += amount;
         this.budget -= amount;
+        this.skipCount = 0;
     }
 
     public placeBetOnGroup(choosenGroup: BetGroups, amount: number): void {
         this.currentBets.push(new BetOnGroup(choosenGroup, amount));
         this.currentBetAmount += amount;
         this.budget -= amount;
+        this.skipCount = 0;
     }
 
     public skipBet(): void {

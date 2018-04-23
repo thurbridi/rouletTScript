@@ -1,49 +1,36 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const AmericanRoulette_1 = require("./AmericanRoulette");
-const EuropeanRoulette_1 = require("./EuropeanRoulette");
-const FrenchRoulette_1 = require("./FrenchRoulette");
-const Game_1 = require("./Game");
-const Player_1 = require("./Player");
-const Utils_1 = require("./Utils");
-const rl = require('readline-sync');
-let roulette;
+const CLI_1 = require("./interface/CLI");
+const AmericanRoulette_1 = require("./logic/AmericanRoulette");
+const EuropeanRoulette_1 = require("./logic/EuropeanRoulette");
+const FrenchRoulette_1 = require("./logic/FrenchRoulette");
+const Game_1 = require("./logic/Game");
+const Player_1 = require("./logic/Player");
+const Utils_1 = require("./logic/Utils");
 let game;
+const cli = new CLI_1.CommandLineInterface();
 function selectRoulette() {
-    const roulettes = ['American roulette', 'European roulette', 'French roulette'];
-    const index = rl.keyInSelect(roulettes, 'Select the roulette variation that will be used:', { cancel: false });
-    switch (index) {
-        case 0:
-            roulette = new AmericanRoulette_1.AmericanRoulette();
-            console.log("American Roulette was selected\n");
-            break;
-        case 1:
-            roulette = new EuropeanRoulette_1.EuropeanRoulette();
-            console.log("European Roulette was selected\n");
-            break;
-        case 2:
-            roulette = new FrenchRoulette_1.FrenchRoulette();
-            console.log("French Roulette was selected\n");
+    const roulette = cli.inputRoulette();
+    switch (roulette) {
+        case 'American roulette':
+            return new AmericanRoulette_1.AmericanRoulette();
+        case 'French roulette':
+            return new FrenchRoulette_1.FrenchRoulette();
+        case 'European roulette':
+            return new EuropeanRoulette_1.EuropeanRoulette();
+        default:
     }
-    return roulette;
-}
-function inputBankBudget() {
-    const bankBudget = rl.questionInt("Bank Budget: $");
-    console.log();
-    return bankBudget;
 }
 function addPlayer() {
-    const name = rl.question("Player name: ");
-    const budget = rl.questionInt("Player budget: $");
-    console.log();
-    return new Player_1.Player(name, budget);
+    const info = cli.inputPlayerInfo();
+    return new Player_1.Player(info.name, info.budget);
 }
 function createPlayerList() {
     const players = [];
     players.push(addPlayer());
     let answer = true;
     while (answer) {
-        answer = rl.keyInYN("Would you like to add another player?");
+        answer = cli.queryAnotherPlayer();
         if (answer) {
             players.push(addPlayer());
         }
@@ -51,23 +38,13 @@ function createPlayerList() {
     console.log();
     return players;
 }
-function inputWillBet(player) {
-    if (rl.keyInYN("Would you like to bet this round?")) {
-        player.skipCount = 0;
-        return true;
-    }
-    else {
-        player.skipBet();
-        return false;
-    }
-}
 function inputChoosenNumber() {
-    const answer = rl.question("What number do you want to bet on? ");
+    const answer = cli.inputChoosenNumber();
     let choosenNumber;
-    if (roulette instanceof AmericanRoulette_1.AmericanRoulette && answer === "00") {
+    if (game.roulette instanceof AmericanRoulette_1.AmericanRoulette && answer === "00") {
         choosenNumber = 37;
     }
-    else if (parseInt(answer, 10) >= 0 || parseInt(answer, 10) <= 36) {
+    else if (parseInt(answer, 10) >= 0 && parseInt(answer, 10) <= 36) {
         choosenNumber = parseInt(answer, 10);
     }
     else {
@@ -76,140 +53,113 @@ function inputChoosenNumber() {
     }
     return choosenNumber;
 }
-function inputBetAmount(player) {
-    console.log("How much will you bet? ");
-    const MAX = player.budget;
-    const MIN = 1;
-    let amount = Math.ceil(player.budget / 2);
-    let key;
-    console.log('\n\n' + (new Array(20)).join(' ') + '[Z] <- -> [X]  FIX: [SPACE]\n');
-    while (true) {
-        console.log('\x1B[1A\x1B[K|' +
-            (new Array(amount + 1)).join('-') + 'O' +
-            (new Array(MAX - amount + 1)).join('-') + '| ' + amount);
-        key = rl.keyIn('', { hideEchoBack: true, mask: '', limit: 'zx ' });
-        if (key === 'z') {
-            if (amount > MIN) {
-                amount--;
-            }
-        }
-        else if (key === 'x') {
-            if (amount < MAX) {
-                amount++;
-            }
+function registerBet(player) {
+    const betType = cli.queryBetType();
+    const amount = cli.inputBetAmount(player.budget);
+    if (betType === "Straight-up") {
+        const choosenNumber = inputChoosenNumber();
+        // game logic
+        player.placeBetOnValue(choosenNumber, amount);
+        if (choosenNumber === 37 && game.roulette instanceof AmericanRoulette_1.AmericanRoulette) {
+            cli.logPlayerBet(player.name, amount, "on the number 00");
         }
         else {
-            break;
+            cli.logPlayerBet(player.name, amount, "on the number " + choosenNumber);
         }
     }
-    return amount;
-}
-function inputBet(player) {
-    const betTypes = ["Straight-up", "Reds", "Blacks", "Evens", "Odds", "Lows", "Highs",
-        "First Dozen", "Second Dozen", "Third Dozen", "Top Column", "Middle Column", "Bottom Column"];
-    const index = rl.keyInSelect(betTypes, "What bet would you like to make?", { cancel: false });
-    console.log("You choose", betTypes[index], ".\n");
-    const amount = inputBetAmount(player);
-    switch (index) {
-        case 0:
-            const choosenNumber = inputChoosenNumber();
-            player.placeBetOnValue(choosenNumber, amount);
-            console.log(player.name, "bets $" + amount, "on the number ", choosenNumber, '\n');
-            break;
-        case 1:
-            player.placeBetOnGroup(Utils_1.BetGroups.RED, amount);
-            console.log(player.name, "bets $" + amount, "on Reds\n");
-            break;
-        case 2:
-            player.placeBetOnGroup(Utils_1.BetGroups.BLACK, amount);
-            console.log(player.name, "bets $" + amount, "on Blacks\n");
-            break;
-        case 3:
-            player.placeBetOnGroup(Utils_1.BetGroups.EVEN, amount);
-            console.log(player.name, "bets $" + amount, "on Evens\n");
-            break;
-        case 4:
-            player.placeBetOnGroup(Utils_1.BetGroups.ODD, amount);
-            console.log(player.name, "bets $" + amount, "on Odds\n");
-            break;
-        case 5:
-            player.placeBetOnGroup(Utils_1.BetGroups.LOW, amount);
-            console.log(player.name, "bets $" + amount, "on Lows\n");
-            break;
-        case 6:
-            player.placeBetOnGroup(Utils_1.BetGroups.HIGH, amount);
-            console.log(player.name, "bets $" + amount, "on Highs\n");
-            break;
-        case 7:
-            player.placeBetOnGroup(Utils_1.BetGroups.DOZEN1, amount);
-            console.log(player.name, "bets $" + amount, "on the First Dozen\n");
-            break;
-        case 8:
-            player.placeBetOnGroup(Utils_1.BetGroups.DOZEN2, amount);
-            console.log(player.name, "bets $" + amount, "on the Second Dozen\n");
-            break;
-        case 9:
-            player.placeBetOnGroup(Utils_1.BetGroups.DOZEN3, amount);
-            console.log(player.name, "bets $" + amount, "on the Third Dozen\n");
-            break;
-        case 10:
-            player.placeBetOnGroup(Utils_1.BetGroups.COLUMNTOP, amount);
-            console.log(player.name, "bets $" + amount, "on the Top Column\n");
-            break;
-        case 11:
-            player.placeBetOnGroup(Utils_1.BetGroups.COLUMNMID, amount);
-            console.log(player.name, "bets $" + amount, "on the Middle Column\n");
-            break;
-        case 12:
-            player.placeBetOnGroup(Utils_1.BetGroups.COLUMNBOT, amount);
-            console.log(player.name, "bets $" + amount, "on the Bottom Column\n");
-            break;
+    else {
+        switch (betType) {
+            case "Reds":
+                player.placeBetOnGroup(Utils_1.BetGroups.RED, amount);
+                break;
+            case "Blacks":
+                player.placeBetOnGroup(Utils_1.BetGroups.BLACK, amount);
+                break;
+            case "Evens":
+                player.placeBetOnGroup(Utils_1.BetGroups.EVEN, amount);
+                break;
+            case "Odds":
+                player.placeBetOnGroup(Utils_1.BetGroups.ODD, amount);
+                break;
+            case "Lows":
+                player.placeBetOnGroup(Utils_1.BetGroups.LOW, amount);
+                break;
+            case "Highs":
+                player.placeBetOnGroup(Utils_1.BetGroups.HIGH, amount);
+                break;
+            case "First Dozen":
+                player.placeBetOnGroup(Utils_1.BetGroups.DOZEN1, amount);
+                break;
+            case "Second Dozen":
+                player.placeBetOnGroup(Utils_1.BetGroups.DOZEN2, amount);
+                break;
+            case "Third Dozen":
+                player.placeBetOnGroup(Utils_1.BetGroups.DOZEN3, amount);
+                break;
+            case "Top Column":
+                player.placeBetOnGroup(Utils_1.BetGroups.COLUMNTOP, amount);
+                break;
+            case "Middle Column":
+                player.placeBetOnGroup(Utils_1.BetGroups.COLUMNMID, amount);
+                break;
+            case "Bottom Column":
+                player.placeBetOnGroup(Utils_1.BetGroups.COLUMNBOT, amount);
+                break;
+        }
+        cli.logPlayerBet(player.name, amount, betType);
     }
 }
 function setup() {
-    console.log("---GAME SETUP---");
-    game = new Game_1.Game(selectRoulette(), inputBankBudget(), createPlayerList());
-    console.log("Roulette type: ", game.rouletteType());
-    console.log("Bank budget: $", game.bankBudget);
-    console.log("Number of players: ", game.playerCount());
-    console.log("---SETUP DONE---\n\n");
+    game = new Game_1.Game(selectRoulette(), cli.inputBankBudget(), createPlayerList());
+    cli.logGameSettings(game.rouletteType(), game.bankBudget, game.playerCount());
 }
 function gameLoop() {
     while (true) {
-        if (!game.bankHasMoney) {
-            console.log("Game ended, the House has no more money.");
+        if (!game.bankHasMoney()) {
+            cli.logGameEnd("the house has no money left.");
             break;
         }
         if (game.playerCount() === 0) {
-            console.log("Game ended, the House always wins.");
+            cli.logGameEnd("no players left.");
             break;
         }
         for (const player of game.players) {
-            console.log(player.name + "'s turn");
+            cli.logPlayerTurn(player.name);
             if (player.skipCount === 3) {
-                console.log("You have to bet this round.");
-                player.skipCount = 0;
-                inputBet(player);
+                cli.logForcedBet();
+                registerBet(player);
             }
             else {
-                if (inputWillBet(player)) {
+                if (cli.queryBetThisRound()) {
                     let answer = true;
                     while (answer) {
-                        inputBet(player);
-                        answer = rl.keyInYN("Would you like to make another bet?");
+                        registerBet(player);
+                        answer = cli.queryAnotherBet();
                     }
+                }
+                else {
+                    player.skipBet();
                 }
             }
         }
         const result = game.spinRoulette();
-        console.log("\n>>> The ball landed on the number " + result + " <<<\n");
+        if (result === 37) {
+            cli.logBallResult('00');
+        }
+        else {
+            cli.logBallResult(String(result));
+        }
         for (const player of game.players) {
-            game.processBets(player, result);
-            console.log(player.name, " has $", player.budget);
+            const earnedAmount = game.processBets(player, result);
+            if (earnedAmount > 0) {
+                cli.logPlayerEarnings(player.name, earnedAmount);
+            }
+            cli.logPlayerTotal(player.name, player.budget);
             if (player.budget <= 0) {
                 game.kickPlayer(player);
             }
         }
+        console.log();
     }
 }
 function start() {
